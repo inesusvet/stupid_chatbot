@@ -1,17 +1,19 @@
 import time
-import slackclient
 import os
+
 import requests
+import slackclient
 
 
 def open(token):
     return StubAPI(token)
 
+
 def open_slack(token):
-    return Slack(token) 
+    return Slack(token)
+
 
 class StubAPI:
-
     def __init__(self, token):
         self.token = token
 
@@ -22,14 +24,14 @@ class StubAPI:
                 ]
 
     def write(self, messages):
-        pass
         print(messages)
 
     def is_connected(self):
         pass
 
     def is_server_connected(self):
-        pass    
+        pass
+
 
 class Slack(StubAPI):
     def __init__(self, token):
@@ -48,8 +50,8 @@ class Slack(StubAPI):
     def write(self, messages):
         self.sc.rtm_send_message(messages.channel, messages.text)
 
-class Message:
 
+class Message:
     def __init__(self, text, channel=None, author=None):
         self.text = text
         self.channel = channel
@@ -59,6 +61,7 @@ class Message:
         return 'Message with text {} for channel {} written by {}'.format(
             self.text, self.channel, self.author)
 
+
 def get_slack_user(user_id):
     url_user = 'https://slack.com/api/users.info?token={}&user={}&pretty=1'.format(
                                     os.environ["SLACK_API_TOKEN"], user_id,
@@ -67,6 +70,7 @@ def get_slack_user(user_id):
     if resp.status_code == 200:
         return resp.json().get('user')
     return None
+
 
 def process(messages):
     responses = []
@@ -78,7 +82,7 @@ def process(messages):
                     if any(phrase in text.lower() for phrase in ('hi', 'hello', 'hey',)):
                         if msg.get('channel'):
                             user = msg.get('user')
-                            user = get_slack_user(user) if user else ''                            
+                            user = get_slack_user(user) if user else ''
                             responses.append(Message('Hi, {}!'.format(
                                 user.get('real_name','Unknown')
                                 ), msg.get('channel')))
@@ -119,7 +123,7 @@ def main():
                 outgoing_queue.extend(process(incoming_queue))
             time.sleep(10)
     else:
-        print('Connection failed')        
+        print('Connection failed')
     # while True:
     #     print('In start: Incoming - {}, Outgoing - {}'.format(
     #         incoming_queue, outgoing_queue))
@@ -132,7 +136,6 @@ def main():
     #     print('Incoming - {}, Outgoing - {}'.format(incoming_queue,
     #                                                 outgoing_queue))
         # time.sleep(10)
-    return
 
 
 if __name__ == '__main__':
